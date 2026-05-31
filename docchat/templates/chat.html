@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DocChat — chat with your documents</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="demo-banner">⚠ {{ demo_banner }}</div>
+  <div class="topbar">
+    <div class="brand">Doc<span>Chat</span> · <small class="muted">chat with your documents</small></div>
+    <div class="mode">
+      {% if llm_enabled %}Mode: <b>full AI ({{ llm_provider }})</b>{% else %}Mode: <b>keyless retrieval</b> (no LLM){% endif %}
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Indexed documents ({{ chunk_count }} chunks)</h3>
+      <div id="doclist">
+        {% for d in documents %}
+        <div class="doc">
+          <div class="name">{{ d.name }}</div>
+          <div class="meta">{{ d.pages }} page{{ 's' if d.pages != 1 else '' }} · {{ d.n_chunks }} chunks</div>
+          <span class="tag {{ d.source }}">{{ d.source }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="upload">
+        <label>Chat with your own PDF</label><br>
+        <input type="file" id="file" accept="application/pdf">
+        <button class="btn" onclick="document.getElementById('file').click()">Choose PDF…</button>
+        <div id="upload-status"></div>
+      </div>
+
+      <form method="post" action="/reset" style="margin-top:16px"
+            onsubmit="return confirm('Reset to just the bundled sample documents?')">
+        <button class="btn btn-danger" type="submit">Reset demo data</button>
+      </form>
+    </aside>
+
+    <section class="chatcol">
+      <div class="chat" id="chat">
+        <div class="empty" id="empty">
+          <h2>Ask a question about your documents</h2>
+          <p>The demo answers by <strong>retrieving</strong> the most relevant
+          passages from the indexed PDFs and quoting them back with citations —
+          <strong>no LLM, no network</strong>. Try one of these:</p>
+          <div class="suggestions">
+            <span class="chip">How many vacation days do employees get?</span>
+            <span class="chip">How do I reset the Widget 3000?</span>
+            <span class="chip">What is the refund window?</span>
+            <span class="chip">How long is the Widget 3000 battery life?</span>
+            <span class="chip">How do I request a refund?</span>
+          </div>
+        </div>
+      </div>
+
+      <form class="composer" id="composer">
+        <input id="q" autocomplete="off" placeholder="Ask about the handbook, manual, or refund policy…">
+        <button type="submit">Ask</button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const q = document.getElementById("q");
+    const LLM = {{ 'true' if llm_enabled else 'false' }};
+
+    function esc(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function clearEmpty() { const e = document.getElementById("empty"); if (e) e.remove(); }
+
+    function addUser(text) {
+      clearEmpty();
+      const d = document.createElement("div");
+      d.className = "msg user";
+      d.innerHTML = `<div class="bubble">${esc(text)}</div>`;
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addBot(result) {
+      const d = document.createElement("div");
+      d.className = "msg bot";
+      let html = `<div class="answer-label">${esc(result.label || "")}</div>`;
+      html += `<div class="bubble">${esc(result.answer)}</div>`;
+      if (result.citations && result.citations.length) {
+        html += `<div class="citations">`;
+        for (const c of result.citations) {
+          html += `<div class="cite">
+            <div class="src">📄 ${esc(c.document)} — page ${c.page}, chunk ${c.chunk}
+              <span class="score">relevance ${c.score}</span></div>
+            <div class="snip">${esc(c.snippet)}</div>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+      d.innerHTML = html;
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function ask(text) {
+      if (!text.trim()) return;
+      addUser(text);
+      const res = await fetch("/api/ask", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: text }),
+      });
+      addBot(await res.json());
+    }
+
+    document.getElementById("composer").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = q.value; q.value = ""; ask(v);
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("chip")) ask(e.target.textContent.trim());
+    });
+
+    // PDF upload
+    document.getElementById("file").addEventListener("change", async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const status = document.getElementById("upload-status");
+      status.textContent = "Uploading & indexing " + f.name + "…";
+      const fd = new FormData(); fd.append("file", f);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        status.textContent = `Indexed “${data.document.name}” (${data.document.pages} pages, ${data.document.n_chunks} chunks).`;
+        const dl = document.getElementById("doclist");
+        const el = document.createElement("div");
+        el.className = "doc";
+        el.innerHTML = `<div class="name">${esc(data.document.name)}</div>
+          <div class="meta">${data.document.pages} pages · ${data.document.n_chunks} chunks</div>
+          <span class="tag upload">upload</span>`;
+        dl.appendChild(el);
+      } else {
+        status.textContent = "Error: " + (data.error || "upload failed");
+      }
+    });
+  </script>
+</body>
+</html>

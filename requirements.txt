@@ -1,0 +1,18 @@
+# DocChat — everything the ZERO-config demo needs (keyless, offline RAG).
+fastapi>=0.110
+uvicorn[standard]>=0.27
+jinja2>=3.1
+python-multipart>=0.0.9
+python-dotenv>=1.0
+pypdf>=4.0
+
+# --- Optional: regenerate the bundled sample PDFs -----------------------------
+# The sample PDFs are committed, so this is only needed to re-run
+# tools/make_samples.py:
+#   pip install reportlab
+
+# --- FULL (live) version only — NOT needed for the demo -----------------------
+# Install ONE of these only if you set the matching API key to enable real
+# LLM answers (the demo never calls an LLM):
+#   pip install anthropic        # for ANTHROPIC_API_KEY
+#   pip install openai           # for OPENAI_API_KEY
