@@ -1,6 +1,6 @@
 # DocChat — AI Business Tools (chat with your documents)
 
-> A real **retrieval-augmented "chat with your PDFs"** app. It **ingests PDFs** (pypdf), **chunks** them, builds a **pure-Python BM25 index**, and answers a question by **retrieving the most relevant passages and quoting them back with citations** (which document, page and chunk). The demo runs **100% offline with zero config** — no API key, no network, no model downloads — and never pretends an LLM wrote the answer. When you add an LLM API key, the *same* retrieved context powers a natural-language answer instead.
+> A real **retrieval-augmented "chat with your PDFs"** app. It **ingests PDFs** (pypdf), **chunks** them, builds a **pure-Python BM25 index**, and answers a question by **retrieving the most relevant passages and quoting them back with citations** (which document, page and chunk). It runs **100% offline with zero config** — no API key, no network, no model downloads — and never pretends an LLM wrote the answer. When you add an LLM API key, the *same* retrieved context powers a natural-language answer instead.
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-app-009688)](https://fastapi.tiangolo.com)
@@ -8,7 +8,7 @@
 [![BM25](https://img.shields.io/badge/BM25-pure--python%20retrieval-19b89a)](https://en.wikipedia.org/wiki/Okapi_BM25)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-DocChat proves the **AI Business Tools** service area — specifically **RAG** ("chat with your documents"): the kind of assistant a business points at its handbooks, manuals and policies so staff and customers get instant, **cited** answers. **Every bundled document is fictional** — an Acme employee handbook, a Globex product manual, and an Initech refund policy — with `example.com` emails and `555` phone numbers. A persistent banner makes the keyless, no-LLM nature of the demo explicit.
+DocChat proves the **AI Business Tools** service area — specifically **RAG** ("chat with your documents"): the kind of assistant a business points at its handbooks, manuals and policies so staff and customers get instant, **cited** answers. **Every bundled document is fictional** — an Acme employee handbook, a Globex product manual, and an Initech refund policy — with `example.com` emails and `555` phone numbers. A small label on every answer makes the keyless, no-LLM behaviour explicit.
 
 ---
 
@@ -26,14 +26,14 @@ A genuine RAG pipeline, not a mockup:
 
 1. **Real ingestion.** [`ingest.py`](docchat/ingest.py) extracts text from each PDF with **pypdf** and splits it into overlapping word-chunks, keeping each chunk's **source document and page** so answers can cite exactly where they came from.
 2. **Real, transparent retrieval.** [`index.py`](docchat/index.py) is a **from-scratch, pure-Python Okapi BM25** index (tokenize → term/document frequencies → IDF → BM25 scoring). No embeddings service, no model download, no network — classic keyword retrieval you can read end to end.
-3. **Honest extractive answers.** In the demo, [`rag.py`](docchat/rag.py) takes the top chunks, picks the **best-matching sentences**, and returns them **verbatim** with citations — clearly labelled *“Demo answer — retrieved from your documents, no LLM generation.”* The demo never fabricates prose.
+3. **Honest extractive answers.** By default, [`rag.py`](docchat/rag.py) takes the top chunks, picks the **best-matching sentences**, and returns them **verbatim** with citations — clearly labelled *“Retrieved from your documents — no LLM generation.”* It never fabricates prose.
 4. **Citations you can trust.** Every answer lists its sources: document name, page, chunk, a relevance score, and the snippet used.
 5. **Bring your own PDF.** Upload any PDF in the UI and chat with it immediately — it goes through the *same* keyless ingestion + retrieval.
 6. **A real LLM path, off by default.** [`llm.py`](docchat/llm.py) builds a grounded prompt from the retrieved context and calls Anthropic or OpenAI — used **only** when an API key is set. With no key, that code is never touched and the SDKs aren't even required.
 
-## Demo mode vs. the full (LLM) version
+## Default mode vs. the full (LLM) version
 
-| | **Demo (default)** | **Full / LLM** |
+| | **Default (keyless)** | **Full / LLM** |
 | --- | --- | --- |
 | Answer | **Extractive** — sentences quoted from your docs | **Generated** — natural language from an LLM |
 | Config needed | **None** | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` |
@@ -65,7 +65,7 @@ docchat/
 └── docs/screenshots/
 ```
 
-## Quick start (zero-config demo)
+## Quick start (zero-config)
 
 ```bash
 git clone git@github.com:MoAdelMamoun/docchat.git
@@ -87,7 +87,7 @@ python tools/smoke.py
 
 ## Configuration (full / LLM version — optional)
 
-The demo needs nothing. To enable **LLM-generated** answers, copy `.env.example` to `.env` and set one key:
+It needs nothing to run. To enable **LLM-generated** answers, copy `.env.example` to `.env` and set one key:
 
 | Variable | Purpose |
 | --- | --- |
@@ -116,16 +116,16 @@ curl -X POST http://localhost:8000/api/upload -F 'file=@your.pdf'
 
 ## How the sample PDFs were made
 
-They're committed under [`sample_docs/`](sample_docs/), so the demo needs nothing to run. To regenerate them:
+They're committed under [`sample_docs/`](sample_docs/), so it needs nothing to run. To regenerate them:
 
 ```bash
 pip install reportlab
 python tools/make_samples.py
 ```
 
-## Deploy the demo
+## Deploy
 
-The demo makes no external calls, so it's safe to host publicly:
+It makes no external calls, so it's safe to host publicly:
 
 - **Any container/VM** — `pip install -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port $PORT`.
 - **Fly.io / Render / Railway** — point the start command at `uvicorn app:app`; attach a volume if you want uploaded PDFs to persist.

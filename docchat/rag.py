@@ -110,4 +110,4 @@ def answer_question(question: str, top_k: int | None = None) -> dict:
     }
 
 
-_LABEL_DEMO = "Demo answer — retrieved from your documents, no LLM generation."
+_LABEL_DEMO = "Retrieved from your documents — no LLM generation."

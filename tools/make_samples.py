@@ -34,7 +34,7 @@ def build(filename: str, title: str, blocks: list) -> None:
                             leftMargin=1 * inch, rightMargin=1 * inch,
                             title=title)
     story = [Paragraph(title, H1),
-             Paragraph("FICTIONAL SAMPLE DOCUMENT — for the DocChat demo only.", NOTE),
+             Paragraph("Fictional sample document.", NOTE),
              Spacer(1, 10)]
     for block in blocks:
         kind, text = block
@@ -51,7 +51,7 @@ def build(filename: str, title: str, blocks: list) -> None:
 def handbook() -> None:
     build(
         "acme_employee_handbook.pdf",
-        "Acme Corporation — Employee Handbook (DEMO)",
+        "Acme Corporation — Employee Handbook",
         [
             ("h2", "1. Working Hours"),
             ("p", "Standard working hours at Acme Corporation are 9:00 AM to 5:00 PM, "
@@ -88,11 +88,11 @@ def handbook() -> None:
 def manual() -> None:
     build(
         "globex_widget3000_manual.pdf",
-        "Globex Widget 3000 — Product Manual (DEMO)",
+        "Globex Widget 3000 — Product Manual",
         [
             ("h2", "Overview"),
             ("p", "Thank you for choosing the Globex Widget 3000, a fictional device "
-                  "used only to demonstrate DocChat. This manual covers setup, features, "
+                  "used here as sample documentation. This manual covers setup, features, "
                   "troubleshooting and warranty."),
             ("h2", "Getting Started"),
             ("p", "1. Remove the Widget 3000 from its packaging. 2. Charge the device "
@@ -125,7 +125,7 @@ def manual() -> None:
 def refund_policy() -> None:
     build(
         "initech_refund_policy.pdf",
-        "Initech Online Store — Refund & Returns Policy (DEMO)",
+        "Initech Online Store — Refund & Returns Policy",
         [
             ("h2", "1. Refund Window"),
             ("p", "Initech accepts returns within 30 days of the delivery date. To be "
@@ -151,7 +151,7 @@ def refund_policy() -> None:
                   "arrange an exchange."),
             ("h2", "6. Contact"),
             ("p", "For any questions about this fictional policy, contact the Initech "
-                  "demo support team at refunds@example.com or 1-555-0100."),
+                  "support team at refunds@example.com or 1-555-0100."),
         ],
     )
 

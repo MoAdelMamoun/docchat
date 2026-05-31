@@ -45,6 +45,3 @@ def llm_provider() -> str | None:
 
 
 LLM_ENABLED = llm_provider() is not None
-
-DEMO_BANNER = ("Demo — keyless retrieval, no LLM. Add an API key for full AI answers. "
-               "All bundled documents are fictional.")

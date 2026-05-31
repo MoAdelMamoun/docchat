@@ -36,7 +36,6 @@ def _startup() -> None:
 def _ctx(request: Request, **extra) -> dict:
     base = {
         "request": request,
-        "demo_banner": config.DEMO_BANNER,
         "llm_enabled": config.LLM_ENABLED,
         "llm_provider": config.llm_provider(),
     }
